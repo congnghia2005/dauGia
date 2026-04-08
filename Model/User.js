@@ -1,18 +1,29 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
   email: {
-        type: String,
-        required: true,
-        unique: true,
-        lowercase: true,
-        trim: true,
-        match: [/^\S+@\S+\.\S+$/, 'Please use a valid email']
-    },
-  local: { type: String, required: true },
-  dob: { type: Date, required: true }
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    match: [/^\S+@\S+\.\S+$/, 'Invalid email']
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  phone: String,
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  }
 }, {
   timestamps: true
 });
