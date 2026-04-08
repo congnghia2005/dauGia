@@ -1,4 +1,6 @@
 import express from "express";
+import { getProductsByCategory } from "../Controller/Product.js";
+
 const router = express.Router();
 
 import product from "../Model/Product.js";
@@ -9,4 +11,5 @@ router.get("/getall", getAll(product));
 router.get("/getbyid/:id", get(product));
 router.put("/update/:id", update(product));
 router.delete("/delete/:id", remove(product));
+router.get("/findByCategory", getProductsByCategory);
 export default router;

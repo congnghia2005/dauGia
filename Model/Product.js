@@ -6,6 +6,11 @@ const productSchema = new mongoose.Schema({
     required: true
   },
   description: String,
+  category: {
+    type: String,
+    enum: ['áo quần', 'phụ kiện', 'nội thất', 'khác'],
+    required: true
+  },
   startingPrice: {
     type: Number,
     required: true
