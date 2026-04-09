@@ -40,7 +40,7 @@ export const getUsersByExactAge = async (req, res) => {
           username: 1,
           email: 1,
           age: 1,
-          local:1,
+          local:1,  
           _id: 0
         }
       }
