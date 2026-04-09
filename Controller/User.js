@@ -4,9 +4,10 @@ import Product from "../Model/Product.js";
 import Bid from "../Model/Bid.js";
 import Order from "../Model/Order.js";
 
+// lay cac khach hang theo tuoi
 export const getUsersByExactAge = async (req, res) => {
   try {
-    const age = parseInt(req.query.age);
+    const age = parseInt(req.params.age);
 
     if (!age) {
       return res.status(400).json({ message: "Thiếu age" });
@@ -57,19 +58,16 @@ export const getUsersByExactAge = async (req, res) => {
   }
 };
 
-export const getproductOfbidUser = async (req, res) => {
+
+
+// Lấy sản phẩm mà một user đã bid 
+export const getUserBiddedProducts = async (req, res) => {
   try {
     const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId))
+      return res.status(400).json({ message: "Invalid userId" });
 
-    if (!userId) {
-      return res.status(400).json({ message: "Thiếu userId" });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: "userId không hợp lệ" });
-    }
-
-    const product = await Bid.aggregate([
+    const products = await Bid.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId)
@@ -77,7 +75,8 @@ export const getproductOfbidUser = async (req, res) => {
       },
       {
         $group: {
-          _id: "$productId"
+          _id: "$productId",
+          bidCount: { $sum: 1 }
         }
       },
       {
@@ -99,48 +98,10 @@ export const getproductOfbidUser = async (req, res) => {
           _id: 0,
           productId: "$_id",
           nameProduct: "$product.name",
-          description: "$product.description"
+          description: "$product.description",
+          bidCount: 1
         }
       }
-    ]);
-
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// ==========================================
-// 3 HÀM TRUY VẤN (easy → hard)
-// ==========================================
-
-// 1️⃣ Lấy tất cả sản phẩm mà một user đã bid (Easy)
-export const getUserBiddedProducts = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(userId))
-      return res.status(400).json({ message: "Invalid userId" });
-
-    const products = await Bid.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: "$productId", bidCount: { $sum: 1 } } },
-      {
-        $lookup: {
-          from: "products",
-          localField: "_id",
-          foreignField: "_id",
-          as: "product",
-        },
-      },
-      { $unwind: "$product" },
-      {
-        $project: {
-          _id: 0,
-          productId: "$_id",
-          productName: "$product.name",
-          bidCount: 1,
-        },
-      },
     ]);
 
     res.json(products);
@@ -150,7 +111,49 @@ export const getUserBiddedProducts = async (req, res) => {
   }
 };
 
-// 2️⃣ Lấy top 3 sản phẩm có giá bid cao nhất hiện tại (Medium)
+export const getTopBidders = async (req, res) => {
+  try {
+    const result = await Bid.aggregate([
+      {
+        $group: {
+          _id: "$userId",
+          totalBids: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { totalBids: -1 }
+      },
+      {
+        $limit: 5
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $unwind: "$user"
+      },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          username: "$user.username",
+          email: "$user.email",
+          totalBids: 1
+        }
+      }
+    ]);
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+// Lấy top 3 sản phẩm có giá bid cao nhất hiện tại (Medium)
 export const getTop3ExpensiveBids = async (req, res) => {
   try {
     const products = await Product.aggregate([
@@ -167,7 +170,7 @@ export const getTop3ExpensiveBids = async (req, res) => {
   }
 };
 
-// 3️⃣ Lấy danh sách user kèm tổng số tiền họ đã bid (Hard)
+//Lấy danh sách user kèm tổng số tiền họ đã bid 
 export const getUsersTotalBidAmount = async (req, res) => {
   try {
     const users = await Bid.aggregate([
@@ -210,7 +213,7 @@ export const getUsersTotalBidAmount = async (req, res) => {
 // 5 CÂU THỐNG KÊ (easy → hard)
 // ==========================================
 
-// 1️⃣ Tổng số user hiện có
+//Tổng số user hiện có
 export const getTotalUsers = async (req, res) => {
   try {
     const total = await User.countDocuments();

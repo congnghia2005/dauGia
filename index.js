@@ -2,7 +2,11 @@ import express from "express"
 import mongoose from "mongoose"
 import dotenv from "dotenv"
 
+
 import userRouter from "./Router/User.js"
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swaggerN.js";
+
 
 dotenv.config()
 
@@ -13,6 +17,7 @@ const PORT = process.env.PORT || 7000
 const MONGOURL = process.env.MONGO_URL
 
 app.use("/api/user",userRouter)
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 mongoose.connect(MONGOURL)
 .then(() => {
