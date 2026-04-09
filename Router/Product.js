@@ -1,5 +1,9 @@
 import express from "express";
 import { getProductsByCategory } from "../Controller/Product.js";
+import { getActiveProducts } from "../Controller/Product.js";
+import { getUpcomingProducts} from "../Controller/Product.js";
+import { getAllProducts } from "../Controller/Product.js";
+import { getProductsByMostProducts } from "../Controller/Product.js";
 
 const router = express.Router();
 
@@ -12,4 +16,8 @@ router.get("/getbyid/:id", get(product));
 router.put("/update/:id", update(product));
 router.delete("/delete/:id", remove(product));
 router.get("/findByCategory", getProductsByCategory);
+router.get("/active", getActiveProducts);
+router.get("/upcoming", getUpcomingProducts);
+router.get("/all", getAllProducts);
+router.get("/mostProducts", getProductsByMostProducts);
 export default router;
