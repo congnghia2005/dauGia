@@ -1,5 +1,5 @@
 import express from "express";
-import { getUsersByExactAge } from "../Controller/User.js";
+import { getUsersByExactAge,getproductOfbidUser } from "../Controller/User.js";
 import {getUserBiddedProducts} from "../Controller/BID.js"
 
 const router = express.Router();
@@ -15,4 +15,5 @@ router.delete("/delete/:id", remove(user));
 
 router.get("/findByAge",getUsersByExactAge);    
 router.get("/getUserBiddedProducts/:userId/products", getUserBiddedProducts);
+router.get("/getproductOfbidUser/:userId",getproductOfbidUser)
 export default router;

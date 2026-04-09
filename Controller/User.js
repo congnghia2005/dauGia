@@ -1,4 +1,3 @@
-import User from "../Model/User.js";
 import mongoose from "mongoose";
 import User from "../Model/User.js";
 import Product from "../Model/Product.js";
@@ -58,6 +57,58 @@ export const getUsersByExactAge = async (req, res) => {
   }
 };
 
+export const getproductOfbidUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "Thiếu userId" });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "userId không hợp lệ" });
+    }
+
+    const product = await Bid.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId)
+        }
+      },
+      {
+        $group: {
+          _id: "$productId"
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "_id",
+          as: "product"
+        }
+      },
+      {
+        $unwind: {
+          path: "$product",
+          preserveNullAndEmptyArrays: false
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id",
+          nameProduct: "$product.name",
+          description: "$product.description"
+        }
+      }
+    ]);
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // ==========================================
 // 3 HÀM TRUY VẤN (easy → hard)
